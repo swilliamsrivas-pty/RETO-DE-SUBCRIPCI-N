@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente de Beneficio — Antes de tu cita</title>
+<style>
+  :root{
+    --ink:#1b2b2a;
+    --paper:#f6f4ee;
+    --panel:#ffffff;
+    --line:#dcd6c6;
+    --teal:#0e5b52;
+    --teal-deep:#093c36;
+    --moss:#7c9473;
+    --coin:#b8843f;
+    --alert:#a3432f;
+    --muted:#6b6459;
+    --radius-msg:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family: 'Iowan Old Style','Palatino Linotype',Georgia,serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #eef0e4 0%, transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 16px;
+  }
+  .app{
+    width:100%;
+    max-width:760px;
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 56px);
+    min-height:560px;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    padding:4px 4px 18px 4px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:18px;
+  }
+  header .brand{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  header .brand .mark{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.02em;
+    color:var(--teal-deep);
+  }
+  header h1{
+    margin:0;
+    font-size:22px;
+    font-weight:500;
+    color:var(--ink);
+  }
+  header .plan-chip{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:12px;
+    color:var(--muted);
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:6px 12px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .thread{
+    flex:1;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:4px 4px 12px 4px;
+  }
+  .row{
+    display:flex;
+    width:100%;
+  }
+  .row.bot{justify-content:flex-start;}
+  .row.user{justify-content:flex-end;}
+  .bubble{
+    max-width:82%;
+    padding:12px 16px;
+    line-height:1.5;
+    font-size:15.5px;
+  }
+  .row.bot .bubble{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-msg) var(--radius-msg) var(--radius-msg) 4px;
+  }
+  .row.user .bubble{
+    background:var(--teal);
+    color:#f4f2e9;
+    border-radius:var(--radius-msg) var(--radius-msg) 4px var(--radius-msg);
+  }
+  .bubble p{margin:0 0 8px 0;}
+  .bubble p:last-child{margin-bottom:0;}
+  .bubble .label{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:6px;
+    display:block;
+  }
+  .row.user .bubble .label{color:#cfe3de;}
+
+  /* Result card */
+  .result-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--teal);
+    border-radius:4px 12px 12px 4px;
+    padding:16px 18px;
+    max-width:92%;
+  }
+  .result-card .spec{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:12.5px;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .result-card h3{
+    margin:0 0 12px 0;
+    font-size:19px;
+    font-weight:600;
+    color:var(--teal-deep);
+  }
+  .cost-line{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:7px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:14.5px;
+  }
+  .cost-line:last-of-type{border-bottom:none;}
+  .cost-line .num{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-weight:600;
+  }
+  .cost-line.total .num{
+    color:var(--coin);
+    font-size:17px;
+  }
+  .hospital-pick{
+    margin-top:14px;
+    padding:12px 14px;
+    background:#f2f0e5;
+    border-radius:8px;
+  }
+  .hospital-pick .best{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:11.5px;
+    color:var(--moss);
+    font-weight:700;
+    margin-bottom:3px;
+  }
+  .hospital-pick .name{
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .hospital-pick .addr{
+    font-size:13px;
+    color:var(--muted);
+  }
+  .alt-list{
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .alt-item{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--muted);
+    padding:2px 2px;
+  }
+  .alt-item .amt{font-family:'Helvetica Neue',Arial,sans-serif;color:var(--ink);}
+
+  .note-flag{
+    margin-top:12px;
+    font-size:12.5px;
+    color:var(--alert);
+    background:#f7ece9;
+    border:1px solid #eccfc7;
+    padding:8px 10px;
+    border-radius:8px;
+  }
+
+  /* Suggestion chips */
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:2px 4px 4px 4px;
+  }
+  .chip{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:13px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--teal-deep);
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .chip:hover{background:#eef0e4;}
+  .chip:active{transform:scale(.97);}
+
+  /* Typing indicator */
+  .typing{
+    display:inline-flex;
+    gap:4px;
+    padding:14px 16px;
+  }
+  .typing span{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--muted);
+    opacity:.5;
+    animation:blink 1.2s infinite;
+  }
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.25;}40%{opacity:.8;}}
+
+  /* Input bar */
+  .composer{
+    display:flex;
+    gap:10px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+  .composer input{
+    flex:1;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:15px;
+    padding:13px 16px;
+    border:1px solid var(--line);
+    border-radius:24px;
+    background:var(--panel);
+    color:var(--ink);
+    outline:none;
+  }
+  .composer input:focus{border-color:var(--teal);}
+  .composer button{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:0 22px;
+    border:none;
+    border-radius:24px;
+    background:var(--teal);
+    color:#f4f2e9;
+    cursor:pointer;
+  }
+  .composer button:disabled{opacity:.4;cursor:default;}
+  .composer button:not(:disabled):hover{background:var(--teal-deep);}
+
+  .disclaimer{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+    padding-top:10px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .typing span{animation:none;opacity:.6;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="brand">
+      <span class="mark">RED VITALIA · ASISTENTE DE BENEFICIO</span>
+      <h1>¿Qué te está molestando?</h1>
+    </div>
+    <div class="plan-chip" id="planChip">Plan Vitalia Plus</div>
+  </header>
+
+  <div class="thread" id="thread"></div>
+
+  <div class="chips" id="chips"></div>
+
+  <form class="composer" id="composer">
+    <input type="text" id="userInput" placeholder="Describe tu síntoma, por ejemplo: dolor de garganta" autocomplete="off">
+    <button type="submit" id="sendBtn">Enviar</button>
+  </form>
+  <div class="disclaimer">Estimado informativo según tu plan. No sustituye una evaluación médica ni la verificación final del hospital.</div>
+</div>
+
+<script>
+(function(){
+
+  // ---------- CONFIGURACIÓN DE GROQ (SOLO PARA PRUEBAS) ----------
+  // ADVERTENCIA: exponer la API key en el navegador es inseguro para producción.
+  // Cualquiera que inspeccione el código fuente podrá ver y usar esta key.
+  // Úsalo únicamente en un entorno de prueba controlado.
+  const GROQ_API_KEY = "PON_AQUI_TU_GROQ_API_KEY"; // <-- reemplaza esto
+  // openai/gpt-oss-120b es un modelo "razonador": Groq reporta que a veces
+  // ignora response_format json_object o filtra texto de razonamiento en el
+  // contenido final, lo que rompía el parseo JSON en silencio.
+  // qwen/qwen3.6-27b con reasoning_effort:"none" es más confiable para JSON estricto.
+  const GROQ_MODEL = "qwen/qwen3.6-27b";
+  const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+
+  // ---------- DATOS DE EJEMPLO (simula integración con el asegurador) ----------
+
+  const PLAN = {
+    nombre: "Plan Vitalia Plus",
+    deducibleAnualRestante: 40, // ejemplo: ya casi consumido
+  };
+
+  // Especialidades reconocidas y sus palabras clave de síntomas
+  const ESPECIALIDADES = [
+    { id:"medicina_general", nombre:"Medicina General", keywords:["gripe","resfriado","fiebre","malestar","dolor de garganta","tos","cansancio","dolor de cabeza","gastritis","diarrea","nausea","náusea","vómito","alergia leve"] },
+    { id:"cardiologia", nombre:"Cardiología", keywords:["dolor de pecho","palpitaciones","presión alta","hipertensión","corazón","arritmia","falta de aire al esfuerzo"] },
+    { id:"dermatologia", nombre:"Dermatología", keywords:["ronchas","piel","acné","manchas en la piel","comezón","alergia en la piel","urticaria","lunar","labio hinchado","hinchazón en el labio","hinchazón facial","cara hinchada","hinchado","hinchada"] },
+    { id:"traumatologia", nombre:"Traumatología / Ortopedia", keywords:["dolor de espalda","dolor de rodilla","esguince","fractura","dolor de hombro","dolor muscular","torcedura","dolor articular"] },
+    { id:"pediatria", nombre:"Pediatría", keywords:["mi hijo","mi hija","niño con fiebre","bebé","niña con tos"] },
+    { id:"gastroenterologia", nombre:"Gastroenterología", keywords:["dolor de estómago","acidez","reflujo","dolor abdominal","estreñimiento","colitis"] },
+    { id:"neurologia", nombre:"Neurología", keywords:["migraña","mareo","vértigo","hormigueo","convulsión","pérdida de equilibrio"] },
+    { id:"ginecologia", nombre:"Ginecología", keywords:["dolor menstrual","control ginecológico","embarazo","dolor pélvico"] },
+    { id:"oftalmologia", nombre:"Oftalmología", keywords:["ojo rojo","visión borrosa","dolor de ojo","dolor en el ojo","dolor en los ojos","detrás del ojo","parte trasera del ojo","atrás del ojo","picazón en los ojos","molestia en el ojo","molestia en los ojos","ardor en el ojo","presión en el ojo"] },
+    { id:"otorrino", nombre:"Otorrinolaringología", keywords:["dolor de oído","zumbido","sinusitis","congestión nasal","dolor de oidos"] },
+  ];
+
+  // Copagos del plan por especialidad (fijo, ejemplo)
+  const COPAGO_POR_ESPECIALIDAD = {
+    medicina_general: 5,
+    cardiologia: 15,
+    dermatologia: 12,
+    traumatologia: 15,
+    pediatria: 5,
+    gastroenterologia: 12,
+    neurologia: 18,
+    ginecologia: 10,
+    oftalmologia: 10,
+    otorrino: 10,
+  };
+
+  // Hospitales de la red, con tarifa de consulta base y coaseguro % (lo que el plan no cubre de la tarifa)
+  // hospitalTarifa = precio de lista de la consulta en ese hospital para esa especialidad (varía por hospital)
+  const HOSPITALES = [
+    { id:"h1", nombre:"Hospital Vitalia Centro", direccion:"Av. Central, Ciudad de Panamá", coaseguro:0.10, tarifaBase:70, distanciaKm:3.2 },
+    { id:"h2", nombre:"Clínica San Rafael", direccion:"Vía España, Ciudad de Panamá", coaseguro:0.15, tarifaBase:60, distanciaKm:5.1 },
+    { id:"h3", nombre:"Hospital del Valle", direccion:"Costa del Este, Ciudad de Panamá", coaseguro:0.05, tarifaBase:95, distanciaKm:8.4 },
+    { id:"h4", nombre:"Centro Médico Coclé", direccion:"Penonomé, Coclé", coaseguro:0.10, tarifaBase:55, distanciaKm:1.5 },
+    { id:"h5", nombre:"Policlínica Aguadulce", direccion:"Aguadulce, Coclé", coaseguro:0.20, tarifaBase:45, distanciaKm:22.0 },
+  ];
+
+  // Especialidades que no todos los hospitales atienden (simula red parcial)
+  const DISPONIBILIDAD = {
+    cardiologia: ["h1","h3"],
+    neurologia: ["h1","h3"],
+    ginecologia: ["h1","h2","h3"],
+    oftalmologia: ["h1","h2"],
+    otorrino: ["h1","h2","h4"],
+  };
+
+  function hospitalesParaEspecialidad(espId){
+    const permitidos = DISPONIBILIDAD[espId];
+    if(!permitidos) return HOSPITALES; // disponible en toda la red
+    return HOSPITALES.filter(h => permitidos.includes(h.id));
+  }
+
+  function detectarEspecialidad(texto){
+    const t = texto.toLowerCase();
+    let mejor = null;
+    let mejorScore = 0;
+    ESPECIALIDADES.forEach(esp=>{
+      esp.keywords.forEach(k=>{
+        if(t.includes(k)){
+          const score = k.length; // match más largo/específico gana
+          if(score > mejorScore){ mejorScore = score; mejor = esp; }
+        }
+      });
+    });
+    return mejor;
+  }
+
+  // Lista de ids válidos para validar la respuesta del modelo antes de usarla
+  const IDS_VALIDOS = ESPECIALIDADES.map(e => e.id);
+
+  // Llama a Groq para clasificar el síntoma en una especialidad y redactar
+  // un mensaje empático. Devuelve { especialidad, mensaje } o null si falla,
+  // en cuyo caso quien llama debe usar el fallback local (detectarEspecialidad).
+  async function detectarEspecialidadConGroq(texto){
+    if(!GROQ_API_KEY || GROQ_API_KEY === "PON_AQUI_TU_GROQ_API_KEY"){
+      return null; // no configurado, usar motor local
+    }
+    try{
+      const resp = await fetch(GROQ_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          temperature: 0.2,
+          reasoning_effort: "none",
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content:
+`Eres un clasificador administrativo de un hospital. Dado un síntoma en español,
+devuelve SOLO un JSON con esta forma exacta, sin texto adicional:
+{"especialidad_id": "uno_de_la_lista", "confianza": "alta|media|baja", "mensaje_paciente": "1-2 frases empáticas explicando por qué se sugiere esa especialidad, sin dar diagnóstico ni tratamiento ni nombres de medicamentos"}
+
+Lista válida de especialidad_id (usa exactamente uno de estos, tal cual está escrito):
+${IDS_VALIDOS.join(", ")}
+
+Si el síntoma no encaja claramente en ninguna, usa "medicina_general".
+Nunca sugieras diagnósticos, tratamientos ni medicamentos. Nunca inventes un especialidad_id fuera de la lista.`
+            },
+            { role: "user", content: texto }
+          ]
+        })
+      });
+
+      if(!resp.ok){
+        const errBody = await resp.text().catch(()=> "");
+        console.error(`Groq API respondió ${resp.status}:`, errBody);
+        window.__ultimoErrorGroq = `HTTP ${resp.status}: ${errBody.slice(0,200)}`;
+        return null;
+      }
+
+      const data = await resp.json();
+      const content = data?.choices?.[0]?.message?.content;
+      if(!content){
+        console.error("Groq respondió sin contenido utilizable:", data);
+        window.__ultimoErrorGroq = "Respuesta sin contenido (revisa consola: 'data' completo impreso)";
+        return null;
+      }
+
+      // Limpieza defensiva: algunos modelos envuelven el JSON en ```json ... ```
+      // o agregan texto de razonamiento antes/después del objeto JSON.
+      let limpio = content.trim();
+      limpio = limpio.replace(/^```(?:json)?/i, "").replace(/```$/,"").trim();
+
+      let parsed;
+      try{
+        parsed = JSON.parse(limpio);
+      }catch{
+        // Último intento: extraer el primer bloque {...} del texto
+        const match = limpio.match(/\{[\s\S]*\}/);
+        if(match){
+          try{ parsed = JSON.parse(match[0]); }catch{ parsed = null; }
+        }
+      }
+
+      if(!parsed){
+        console.error("No se pudo interpretar como JSON la respuesta de Groq:", content);
+        window.__ultimoErrorGroq = "Respuesta no era JSON válido (revisa consola)";
+        return null;
+      }
+
+      // Validación estricta: el id debe existir en nuestro catálogo cerrado
+      if(!IDS_VALIDOS.includes(parsed.especialidad_id)){
+        parsed.especialidad_id = "medicina_general";
+      }
+
+      const esp = ESPECIALIDADES.find(e => e.id === parsed.especialidad_id);
+      if(!esp) return null;
+
+      return {
+        especialidad: esp,
+        mensaje: typeof parsed.mensaje_paciente === "string" && parsed.mensaje_paciente.trim()
+          ? parsed.mensaje_paciente.trim()
+          : `Con base en lo que describes, esto suena a algo que atiende ${esp.nombre}.`
+      };
+    }catch(err){
+      console.error("Error llamando a Groq:", err);
+      window.__ultimoErrorGroq = err.message || String(err);
+      return null; // ante cualquier error, quien llama usa el fallback local
+    }
+  }
+
+  function calcularCostos(espId){
+    const copago = COPAGO_POR_ESPECIALIDAD[espId];
+    const hospitales = hospitalesParaEspecialidad(espId);
+    const calculado = hospitales.map(h=>{
+      const coaseguroMonto = +(h.tarifaBase * h.coaseguro).toFixed(2);
+      const totalPaciente = +(copago + coaseguroMonto).toFixed(2);
+      return { ...h, copago, coaseguroMonto, totalPaciente };
+    }).sort((a,b)=> a.totalPaciente - b.totalPaciente);
+    return calculado;
+  }
+
+  // ---------- MOTOR DE CONVERSACIÓN ----------
+
+  const thread = document.getElementById('thread');
+  const chipsEl = document.getElementById('chips');
+  const form = document.getElementById('composer');
+  const input = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  document.getElementById('planChip').textContent = PLAN.nombre;
+
+  let state = "inicio"; // inicio -> esperando_sintoma -> mostrado_resultado -> esperando_confirmacion_otro
+
+  function scrollToBottom(){
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function addUserMessage(text){
+    const row = document.createElement('div');
+    row.className = 'row user';
+    row.innerHTML = `<div class="bubble"><span class="label">Tú</span><p></p></div>`;
+    row.querySelector('p').textContent = text;
+    thread.appendChild(row);
+    scrollToBottom();
+  }
+
+  function addBotMessageHTML(html){
+    const row = document.createElement('div');
+    row.className = 'row bot';
+    row.innerHTML = `<div class="bubble">${html}</div>`;
+    thread.appendChild(row);
+    scrollToBottom();
+    return row;
+  }
+
+  function addBotText(text){
+    return addBotMessageHTML(`<p>${text}</p>`);
+  }
+
+  function showTyping(){
+    const row = document.createElement('div');
+    row.className = 'row bot';
+    row.innerHTML = `<div class="bubble typing"><span></span><span></span><span></span></div>`;
+    thread.appendChild(row);
+    scrollToBottom();
+    return row;
+  }
+
+  function setChips(list){
+    chipsEl.innerHTML = "";
+    list.forEach(label=>{
+      const b = document.createElement('button');
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = label;
+      b.addEventListener('click', ()=>{
+        input.value = label;
+        form.requestSubmit();
+      });
+      chipsEl.appendChild(b);
+    });
+  }
+
+  function escapeHtml(str){
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function renderResultado(espId, espNombre, sintomaTexto){
+    const costos = calcularCostos(espId);
+    const mejor = costos[0];
+    const resto = costos.slice(1,4);
+
+    let html = `
+      <span class="label">Asistente</span>
+      <div class="result-card">
+        <div class="spec">Especialidad sugerida</div>
+        <h3>${espNombre}</h3>
+        <div class="cost-line">
+          <span>Copago de tu plan (${escapeHtml(PLAN.nombre)})</span>
+          <span class="num">$${mejor.copago.toFixed(2)}</span>
+        </div>
+        <div class="cost-line">
+          <span>Coaseguro en ${escapeHtml(mejor.nombre)} (${Math.round(mejor.coaseguro*100)}% de tarifa)</span>
+          <span class="num">$${mejor.coaseguroMonto.toFixed(2)}</span>
+        </div>
+        <div class="cost-line total">
+          <span>Total estimado a pagar</span>
+          <span class="num">$${mejor.totalPaciente.toFixed(2)}</span>
+        </div>
+
+        <div class="hospital-pick">
+          <div class="best">MÁS ECONÓMICO EN TU RED</div>
+          <div class="name">${escapeHtml(mejor.nombre)}</div>
+          <div class="addr">${escapeHtml(mejor.direccion)} · ${mejor.distanciaKm} km</div>
+        </div>
+        ${resto.length ? `
+        <div class="alt-list">
+          ${resto.map(h=>`<div class="alt-item"><span>${escapeHtml(h.nombre)}</span><span class="amt">$${h.totalPaciente.toFixed(2)}</span></div>`).join('')}
+        </div>` : ''}
+        ${PLAN.deducibleAnualRestante <= 50 ? `<div class="note-flag">Tu deducible anual está casi agotado ($${PLAN.deducibleAnualRestante} restantes). Si lo superas, el copago podría variar.</div>` : ''}
+      </div>
+    `;
+    addBotMessageHTML(html);
+  }
+
+  async function manejarSintoma(texto){
+    const typingRow = showTyping();
+
+    // 1) Intentar con Groq (interpretación más flexible del lenguaje natural)
+    const resultadoGroq = await detectarEspecialidadConGroq(texto);
+    typingRow.remove();
+
+    let esp, mensajeIntro;
+
+    if(resultadoGroq){
+      esp = resultadoGroq.especialidad;
+      mensajeIntro = escapeHtml(resultadoGroq.mensaje);
+    } else {
+      // Aviso visible: Groq falló y estamos usando el motor local de respaldo
+      if(GROQ_API_KEY && GROQ_API_KEY !== "PON_AQUI_TU_GROQ_API_KEY"){
+        addBotMessageHTML(`<p style="color:#a3432f;font-size:13px;">⚠️ No pude conectar con el modelo de IA (${escapeHtml(window.__ultimoErrorGroq || "error desconocido")}). Usando el motor de respaldo por palabras clave.</p>`);
+      }
+      // 2) Fallback: motor local por palabras clave
+      esp = detectarEspecialidad(texto);
+      if(!esp){
+        addBotText("No logré identificar con claridad tu especialidad a partir de eso. ¿Puedes darme un poco más de detalle? Por ejemplo: dónde sientes la molestia y desde cuándo.");
+        setChips(["Dolor de garganta y fiebre","Dolor de espalda al agacharme","Dolor de pecho al respirar","Ronchas en la piel"]);
+        return;
+      }
+      mensajeIntro = `Con base en "${escapeHtml(texto)}", esto suena a algo que atiende <strong>${esp.nombre}</strong>. Voy a revisar tu plan y la red de hospitales para calcular tu copago.`;
+    }
+
+    addBotText(mensajeIntro);
+
+    const typing2 = showTyping();
+    setTimeout(()=>{
+      typing2.remove();
+      renderResultado(esp.id, esp.nombre, texto);
+      state = "esperando_confirmacion_otro";
+      addBotText("¿Quieres que revise otro síntoma o programo información para agendar en ese hospital?");
+      setChips(["Agendar en ese hospital","Consultar otro síntoma","Ver todos los hospitales de la red"]);
+    }, 500);
+  }
+
+  function iniciar(){
+    addBotText(`Hola, soy tu asistente de beneficios de <strong>${PLAN.nombre}</strong>. Antes de tu cita, cuéntame qué síntoma tienes y te diré qué especialidad te conviene, cuánto pagarás de copago y en qué hospital de tu red te sale más económico.`);
+    setChips(["Dolor de garganta y fiebre","Dolor de espalda","Dolor de pecho","Ronchas en la piel"]);
+    state = "esperando_sintoma";
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const val = input.value.trim();
+    if(!val) return;
+    addUserMessage(val);
+    input.value = "";
+    setChips([]);
+    sendBtn.disabled = true;
+
+    try{
+      if(state === "esperando_confirmacion_otro"){
+        const low = val.toLowerCase();
+        if(low.includes("otro") || low.includes("síntoma") || low.includes("sintoma")){
+          addBotText("Perfecto, cuéntame el nuevo síntoma.");
+          state = "esperando_sintoma";
+          return;
+        }
+        if(low.includes("agendar")){
+          addBotText("Para agendar, comunícate al 800-VITALIA o desde la app de Red Vitalia indicando la especialidad y el hospital que te mostré. Tu copago ya calculado se aplicará al momento de la cita.");
+          setChips(["Consultar otro síntoma"]);
+          return;
+        }
+        if(low.includes("todos") || low.includes("hospitales")){
+          const espUltimo = detectarEspecialidad(lastSintoma || "");
+          addBotText("Aquí tienes la comparación completa de hospitales de tu red para esa especialidad.");
+          if(espUltimo) renderResultado(espUltimo.id, espUltimo.nombre, lastSintoma);
+          setChips(["Consultar otro síntoma"]);
+          return;
+        }
+        // si no coincide con ninguna opción, lo tratamos como nuevo síntoma
+        state = "esperando_sintoma";
+      }
+
+      lastSintoma = val;
+      await manejarSintoma(val);
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  });
+
+  let lastSintoma = "";
+
+  iniciar();
+})();
+</script>
+
+</body>
+</html>
